@@ -3,7 +3,8 @@
 Ele possui uma base nacional que compila dados de óbitos de todo o Brasil, com variáveis demográficas e causas de morte classificadas segundo a CID-10. Ele é amplamente utilizado para análises epidemiológicas, planejamento em saúde pública e monitoramento de tendências de mortalidade.
 
 
-<b>Utilizei a tabela em CSV (sim_salvador_2023)</b>, com registros individuais de óbitos que aconteceram em Salvador durante o ano de 2023, para análise com programação R.
+<b>Utilizei a tabela em CSV (sim_salvador_2023)</b>, com registros individuais de óbitos que aconteceram em Salvador durante o ano de 2023, para aprendizado da linguagem R e análise de dados.
+<p></p>  
 
 Onde foi possível realizar a exploração e transformação dos dados, com exemplos como:<p></p>
 <b>Identificar a quantidadade de obitós por faixa etária.</b>
@@ -28,9 +29,21 @@ Onde foi possível realizar a exploração e transformação dos dados, com exem
 
 <b>Por fim gerar alguns gráficos como:</b>
 <p></p>
-<b>Óbitos por Mês</b>
+
 <p></p>
 <img width="952" height="522" alt="image" src="https://github.com/user-attachments/assets/2d403e87-8cc2-48f6-b3ad-f9a616703191" />
+
+<p></p>
+
+<p></p>
+<img width="952" height="522" alt="image" src="https://github.com/user-attachments/assets/9a2b099b-1edb-4db4-96b0-1325d8851241" />
+
+<p></p>
+
+<p></p>
+<img width="952" height="522" alt="image" src="https://github.com/user-attachments/assets/d3db71c8-4030-412d-896d-ebb793d45f6b" />
+
+
 
 
 
