@@ -1,1 +1,248 @@
+# ==============================================================================
+# Análise de dados do SUS
+# ==============================================================================
 
+# Pacotes necessários para a análise e geração dos gráficos.
+
+install.packages("tidyverse")
+install.packages("readxl")
+install.packages("arrow")
+
+
+install.packages("dplyr")
+install.packages("stringr")
+install.packages("lubridate")
+install.packages("readr")
+install.packages("ggplot2")
+install.packages("tibble")
+install.packages("tidyr")
+install.packages("readxl")
+install.packages("arrow")
+
+
+library(tidyverse)
+library(lubridate)
+library("readxl")
+library("dplyr")
+library("stringr")
+library("readr")
+library("ggplot2")
+library("tibble")
+library("tidyr")
+library("arrow")
+
+#---------------------------------------------------------------------------------
+
+# Define o diretório de trabalho ou seja onde procurar o dataset ou salvar o mesmo.
+setwd("C:/Users/JefersonBrasilianoDa/Desktop/Análise de Dados do SUS")
+
+#retorna a pasta atual de trabalho configurado.
+getwd()
+
+
+df_csv<- read_csv("sim_salvador_2023_processado.csv")
+
+# ------------------------------------------------------------------------------ 
+#  Exploração e Transformação de Dados
+# Cria variável faixa_etaria
+
+df_csv <- df_csv %>%
+  mutate(
+    faixa_etaria = case_when(
+      idade_anos >= 0 & idade_anos <= 12 ~ "Criança",
+      idade_anos >= 13 & idade_anos <= 17 ~ "Adolescente",
+      idade_anos >= 18 & idade_anos <= 59 ~ "Adulto",
+      idade_anos >= 60 ~ "Idoso",
+      TRUE ~ NA_character_  # Para valores ausentes ou fora do esperado
+    )
+  )
+
+# Verifica a criação da variável
+glimpse(df_csv)
+
+# ------------------------------------------------------------------------------
+# Conta os óbitos por faixa etária
+# ------------------------------------------------------------------------------
+
+df_csv %>%
+  count(faixa_etaria, sort = TRUE)
+
+
+
+# ==============================================================================
+# Manipulação de Datas e Agrupamento
+# Cria variável trimestre
+
+
+df_csv <- df_csv %>%
+  mutate(
+    mes_numero = month(DTOBITO_dt),
+    trimestre = case_when(
+      mes_numero %in% c(1, 2, 3) ~ "1º Trimestre",
+      mes_numero %in% c(4, 5, 6) ~ "2º Trimestre",
+      mes_numero %in% c(7, 8, 9) ~ "3º Trimestre",
+      mes_numero %in% c(10, 11, 12) ~ "4º Trimestre",
+      TRUE ~ NA_character_
+    )
+  )
+
+# Verifica a criação da variável trimestre
+df_csv %>%
+  count(trimestre)
+
+# ------------------------------------------------------------------------------
+# Calcula total de óbitos e idade média por trimestre e sexo
+# ------------------------------------------------------------------------------
+
+df_csv %>%
+  group_by(trimestre, sexo_p) %>%
+  summarise(
+    total_obitos = n(),
+    idade_media = mean(idade_anos, na.rm = TRUE),
+    .groups = "drop"  # Remove agrupamento após summarise
+  ) %>%
+  arrange(trimestre, desc(total_obitos))
+
+
+
+# Visualização alternativa com pivot_wider para facilitar comparação
+df_csv %>%
+  group_by(trimestre, sexo_p) %>%
+  summarise(
+    total_obitos = n(),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(
+    names_from = sexo_p,
+    values_from = total_obitos
+  )
+
+
+
+============================================================================
+
+# Identifica o mês com maior número de óbitos
+# ------------------------------------------------------------------------------
+
+df_csv %>%
+  mutate(mes_obito = month(DTOBITO_dt, label = TRUE, abbr = FALSE)) %>%
+  count(mes_obito, sort = TRUE) %>%
+  slice(1)  # Apresenta apenas a primeira linha (maior valor)
+
+
+# Apresenta o três primeiros meses com maior número de obtigos
+df_csv %>%
+  mutate(mes_obito = month(DTOBITO_dt, label = TRUE, abbr = FALSE)) %>%
+  count(mes_obito, sort = TRUE) %>%
+  slice(1:3)
+
+
+# ------------------------------------------------------------------------------
+# Calcula diferença percentual entre óbitos masculinos e femininos
+# ------------------------------------------------------------------------------
+
+# Diferença percentual simples
+df_csv %>%
+  filter(sexo_p %in% c("Masculino", "Feminino")) %>%
+  count(sexo_p) %>%
+  mutate(
+    percentual = (n / sum(n)) * 100,
+    percentual = round(percentual, 2)
+  )
+
+
+
+# ------------------------------------------------------------------------------
+# Determina qual faixa etária teve mais óbitos
+# ------------------------------------------------------------------------------
+
+df_csv %>%
+  count(faixa_etaria, sort = TRUE) %>%
+  slice(1)
+
+
+# Apresenta o percentual
+df_csv %>%
+  count(faixa_etaria, sort = TRUE) %>%
+  mutate(
+    percentual = (n / sum(n)) * 100,
+    percentual = round(percentual, 2)
+  )
+
+
+# Idosos representam 67% de todos os óbitos.
+
+
+# ==============================================================================
+
+
+#Distribuição de óbitos ao longo do ano
+df_csv %>%
+  mutate(
+    mes = month(DTOBITO_dt, label = TRUE),
+    trimestre = case_when(
+      month(DTOBITO_dt) %in% 1:3 ~ "1º Tri",
+      month(DTOBITO_dt) %in% 4:6 ~ "2º Tri",
+      month(DTOBITO_dt) %in% 7:9 ~ "3º Tri",
+      month(DTOBITO_dt) %in% 10:12 ~ "4º Tri"
+    )
+  ) %>%
+  group_by(trimestre) %>%
+  summarise(
+    total = n(),
+    idade_media = round(mean(idade_anos, na.rm = TRUE), 1),
+    idade_min = min(idade_anos, na.rm = TRUE),
+    idade_max = max(idade_anos, na.rm = TRUE)
+  )
+
+
+# ==============================================================================
+# VISUALIZAÇÕES 
+# ==============================================================================
+
+# Gráfico 1: Óbitos por mês
+df_csv %>%
+  mutate(mes = month(DTOBITO_dt, label = TRUE)) %>%
+  count(mes) %>%
+  ggplot(aes(x = mes, y = n)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = n), vjust = -0.5, size = 3) +
+  labs(
+    title = "Distribuição de Óbitos por Mês - Salvador 2023",
+    x = "Mês",
+    y = "Número de Óbitos"
+  ) +
+  theme_minimal()
+
+# Gráfico 2: Distribuição de idade por sexo
+df_csv %>%
+  filter(sexo_p %in% c("Masculino", "Feminino")) %>%
+  ggplot(aes(x = idade_anos, fill = sexo_p)) +
+  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
+  labs(
+    title = "Distribuição de Idade dos Óbitos por Sexo",
+    x = "Idade (anos)",
+    y = "Frequência",
+    fill = "Sexo"
+  ) +
+  theme_minimal()
+
+# Gráfico 3: Óbitos por faixa etária e sexo
+df_csv %>%
+  filter(sexo_p %in% c("Masculino", "Feminino")) %>%
+  count(faixa_etaria, sexo_p) %>%
+  ggplot(aes(x = faixa_etaria, y = n, fill = sexo_p)) +
+  geom_col(position = "dodge") +
+  geom_text(
+    aes(label = n),
+    position = position_dodge(width = 0.9),
+    vjust = -0.5,
+    size = 3
+  ) +
+  labs(
+    title = "Óbitos por Faixa Etária e Sexo - Salvador 2023",
+    x = "Faixa Etária",
+    y = "Número de Óbitos",
+    fill = "Sexo"
+  ) +
+  theme_minimal()
