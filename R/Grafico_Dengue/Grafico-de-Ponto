@@ -1,18 +1,15 @@
 
 # Gráfico de pontos que apresenta a relação de eventos cardiovasculares após dengue (dados gerados manualmente para prática de criação do gráfico).
 
-# Dados de eventos cardiovasculares após dengue
-# IRR = Incidence Rate Ratio (valores > 1 indicam aumento de risco)
 
-
-# Dados de eventos cardiovasculares após dengue 
-# IRR = Incidence Rate Ratio (valores > 1 indicam aumento de risco)
 #----------------------------------------------------------------------
 install.packages("tidyverse")
 install.packages("ggplot2")
+install.packages("tibble")
 
 library("tidyverse")
 library("ggplot2")
+library("tibble")
 
 #-------------------------------------------------------------------------
 eventos_dengue <- tibble(
