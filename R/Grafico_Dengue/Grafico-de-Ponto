@@ -1,1 +1,50 @@
 
+# Gráfico de pontos que apresenta a relação de eventos cardiovasculares após dengue (dados gerados manualmente para prática de criação do gráfico).
+
+# Dados de eventos cardiovasculares após dengue
+# IRR = Incidence Rate Ratio (valores > 1 indicam aumento de risco)
+
+
+# Dados de eventos cardiovasculares após dengue 
+# IRR = Incidence Rate Ratio (valores > 1 indicam aumento de risco)
+#----------------------------------------------------------------------
+install.packages("tidyverse")
+install.packages("ggplot2")
+
+library("tidyverse")
+library("ggplot2")
+
+#-------------------------------------------------------------------------
+eventos_dengue <- tibble(
+  desfecho = rep(c("AVC hemorrágico", "AVC isquêmico", 
+                   "Infarto agudo", "Insuficiência cardíaca"), 2),
+  periodo = rep(c("Dias 1-7", "Dias 8-14"), each = 4),
+  IRR = c(10.90, 15.56, 13.53, 27.24,   # Risco muito elevado logo após infecção
+          4.33, 3.17, 1.16, 2.45)        # Risco diminui com o tempo
+)
+
+# -----------------------------------------------------------------------------
+# sinalização em vermelho para período mais crítico (Dias 1-7) e azul para o posterior
+
+grafico_dengue <- eventos_dengue %>%
+  mutate(desfecho = fct_reorder(desfecho, IRR, .fun = max, .desc = TRUE)) %>%
+  ggplot(aes(x = desfecho, y = IRR, color = periodo)) +
+  geom_point(position = position_dodge(width = .5),size=3) +  # pontos lado a lado
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray50") +
+  scale_fill_manual(
+    values = c("Dias 1-7" = "#E74C3C", "Dias 8-14" = "#3498DB"),
+    name = "Período após infecção"
+  ) +
+  labs(
+    title = "Razão da taxa de incidência por período após dengue",
+    subtitle = "Linha tracejada indica IRR = 1 (sem aumento de risco)",
+    x = "",
+    y = "IRR (Razão da Taxa de Incidência)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 15, hjust = 1),
+    legend.position = "bottom"
+  )
+
+grafico_dengue
